@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CSV File Viewer (Editable)</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f4f6f9;
+      color: #333;
+    }
+    #uploadBox {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    #uploadBox label {
+      font-size: 16px;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      background: #fff;
+      border: 1px solid #ccc;
+    }
+    table {
+      border-collapse: collapse;
+      min-width: 100%;
+      font-size: 13px;
+      white-space: nowrap; 
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #4CAF50;
+      color: white;
+      position: sticky;
+      top: 0; 
+      z-index: 2;
+    }
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+    .cell-input {
+      display: block;
+      min-width: 150px;
+      width: max-content; 
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    td:first-child, th:first-child {
+      position: sticky;
+      left: 0;
+      background: #eee; 
+      z-index: 3;
+      font-weight: bold;
+    }
+    th:first-child {
+      background: #4CAF50;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <h2 id="pageTitle" style="text-align:center;">CSV File Viewer</h2>
+
+  <div id="uploadBox">
+    <label>Select CSV File:</label>
+    <input type="file" id="csvFile" accept=".csv">
+  </div>
+
+  <div class="table-container">
+    <table id="csvTable"></table>
+  </div>
+
+  <script>
+    const csvTable = document.getElementById('csvTable');
+
+    document.getElementById('csvFile').addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      Papa.parse(file, {
+        complete: function(results) {
+          displayCSV(results.data);
+
+          document.getElementById('uploadBox').style.display = 'none';
+          document.getElementById('pageTitle').style.display = 'none';
+        }
+      });
+    });
+
+    function displayCSV(data) {
+      csvTable.innerHTML = '';
+
+      data.forEach((row, rowIndex) => {
+        if (row.length === 1 && row[0].trim() === '') return; 
+
+        const tr = document.createElement('tr');
+
+        // Add row index
+        const tdIndex = document.createElement(rowIndex === 0 ? 'th' : 'td');
+        tdIndex.textContent = rowIndex === 0 ? "#" : rowIndex;
+        tr.appendChild(tdIndex);
+
+        row.forEach(cell => {
+          if (rowIndex === 0) {
+            const th = document.createElement('th');
+            th.textContent = cell.trim();
+            tr.appendChild(th);
+          } else {
+            const td = document.createElement('td');
+            const div = document.createElement('div');
+            div.className = "cell-input";
+            div.contentEditable = "true"; 
+            div.textContent = cell.trim();
+            td.appendChild(div);
+            tr.appendChild(td);
+          }
+        });
+
+        csvTable.appendChild(tr);
+      });
+    }
+  </script>
+</body>
+</html>
